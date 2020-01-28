@@ -1,0 +1,15 @@
+{
+	"id": "{ED983E8E-E90F-03F1-037E-A0728141FA69}",
+	"name": "Prometheus",
+	"type": 0,
+	"vendor": "",
+	"aliases": 
+	[
+		"Prometheus Metrics"
+	],
+	"parentRequirements": [],
+	"childRequirements": [],
+	"implemented": [],
+	"prefix": "PMM",
+	"url": "https://github.com/paresy/symcon_exporter/tree/master/Prometheus"
+}

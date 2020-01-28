@@ -1,0 +1,12 @@
+{
+	"id": "{C70BB65E-DF44-C7C4-4173-28B9BD5C1DD2}",
+	"author": "Symcon GmbH",
+	"name": "Symcon Exporter",
+	"url": "www.symcon.de",
+	"compatibility": {
+		"version": "5.4"
+	},
+	"version": "1.0",
+	"build": 0,
+	"date": 0
+}
