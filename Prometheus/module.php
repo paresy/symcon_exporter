@@ -46,6 +46,6 @@ class Prometheus extends WebHookModule
             }
         }
 
-        include(__DIR__ . "/metrics.php");
+        include __DIR__ . '/metrics.php';
     }
 }
