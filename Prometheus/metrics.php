@@ -196,11 +196,11 @@ $filesystemTotal = [];
 $filesystemAvailable = [];
 foreach ($hi as $x) {
     $filesystemTotal[] = [
-        'device' => $x['LETTER'],
+        'device' => str_replace(':\\', '', $x['LETTER']), //Prometheus does not like the :\ on Windows
         'value'  => $x['TOTAL']
     ];
     $filesystemAvailable[] = [
-        'device' => $x['LETTER'],
+        'device' => str_replace(':\\', '', $x['LETTER']), //Prometheus does not like the :\ on Windows
         'value'  => $x['FREE']
     ];
 }
