@@ -152,13 +152,10 @@ if ($export_cpu) {
 }
 
 if (PHP_OS == 'Linux') {
-    //Source: https://www.php.net/manual/de/function.sys-getloadavg.php#62557
-    $str = substr(strrchr(shell_exec('uptime'), ':'), 1);
-    $load = array_map('trim', explode(',', $str));
-
-    addMetric('symcon_cpu_load1', 'CPU load avergage (1 minute)', 'gauge', floatval($load[0]));
-    addMetric('symcon_cpu_load5', 'CPU load avergage (5 minutes)', 'gauge', floatval($load[1]));
-    addMetric('symcon_cpu_load15', 'CPU load avergage (15 minutes)', 'gauge', floatval($load[2]));
+    $load = sys_getloadavg();
+    addMetric('symcon_cpu_load1', 'CPU load avergage (1 minute)', 'gauge', $load[0]);
+    addMetric('symcon_cpu_load5', 'CPU load avergage (5 minutes)', 'gauge', $load[1]);
+    addMetric('symcon_cpu_load15', 'CPU load avergage (15 minutes)', 'gauge', $load[2]);
 }
 
 $ni = Sys_GetNetworkInfo();
