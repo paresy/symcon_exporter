@@ -58,8 +58,49 @@ if (function_exists('UC_GetEventStatistics')) {
 }
 
 //WebServer Connections
-addMetric('symcon_server_connections_active', 'Active WebSocket or RTSP connections', 'gauge', IPS_GetActiveConnections());
-addMetric('symcon_server_connections_logged', 'Logged connections', 'gauge', count(IPS_GetConnectionList()));
+if (function_exists('IPS_GetActiveConnections')) {
+    addMetric('symcon_server_connections_active', 'Active WebSocket or RTSP connections', 'gauge', IPS_GetActiveConnections());
+    addMetric('symcon_server_connections_logged', 'Logged connections', 'gauge', count(IPS_GetConnectionList()));
+} else {
+    addMetric('symcon_server_websocket_active', 'Active WebSocket or RTSP connections', 'gauge', IPS_GetActiveWebSocketConnections());
+    addMetric('symcon_server_proxy_active', 'Active WebSocket or RTSP connections', 'gauge', IPS_GetActiveProxyConnections());
+    $loggedWebSocket = 0;
+    $loggedProxy = 0;
+    foreach(IPS_GetConnectionList() as $connection) {
+        switch($connection['ConnectionType']) {
+            case "WebSocket":
+                $loggedWebSocket++;
+                break;
+            case "Proxy":
+                $loggedProxy++;
+                break;
+        }
+    }
+    addMetric('symcon_server_websocket_logged', 'Logged WebSocket connections', 'gauge', $loggedWebSocket);
+    addMetric('symcon_server_proxy_logged', 'Logged Proxy connections', 'gauge', $loggedProxy);
+}
+
+//Detailed count of bytes per connection queue
+$queueBytesWebSocket = [];
+$queueBytesProxy = [];
+foreach(IPS_GetConnectionList() as $connection) {
+    switch($connection['ConnectionType']) {
+        case "WebSocket":
+            $queueBytesWebSocket[] = [
+                'remote' => $connection['Remote'],
+                'value'  => $connection['QueueBytes']
+            ];
+            break;
+        case "Proxy":
+            $queueBytesProxy[] = [
+                'remote' => $connection['Remote'],
+                'value'  => $connection['QueueBytes']
+            ];
+            break;
+    }
+}
+addMetric('symcon_server_websocket_queue_bytes', 'Bytes in WebSocket connections queue', 'gauge', $queueBytesWebSocket);
+addMetric('symcon_server_proxy_queue_bytes', 'Bytes in Proxy connections queue', 'gauge', $queueBytesProxy);
 
 //Script Thread metrics
 $scriptThreadList = IPS_GetScriptThreadList();
