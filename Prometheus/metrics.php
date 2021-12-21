@@ -99,8 +99,12 @@ foreach (IPS_GetConnectionList() as $connection) {
             break;
     }
 }
-addMetric('symcon_server_websocket_queue_bytes', 'Bytes in WebSocket connections queue', 'gauge', $queueBytesWebSocket);
-addMetric('symcon_server_proxy_queue_bytes', 'Bytes in Proxy connections queue', 'gauge', $queueBytesProxy);
+if (count($queueBytesWebSocket) > 0) {
+    addMetric('symcon_server_websocket_queue_bytes', 'Bytes in WebSocket connections queue', 'gauge', $queueBytesWebSocket);
+}
+if (count($queueBytesProxy) > 0) {
+    addMetric('symcon_server_proxy_queue_bytes', 'Bytes in Proxy connections queue', 'gauge', $queueBytesProxy);
+}
 
 //Script Thread metrics
 $scriptThreadList = IPS_GetScriptThreadList();
