@@ -66,12 +66,12 @@ if (function_exists('IPS_GetActiveConnections')) {
     addMetric('symcon_server_proxy_active', 'Active WebSocket or RTSP connections', 'gauge', IPS_GetActiveProxyConnections());
     $loggedWebSocket = 0;
     $loggedProxy = 0;
-    foreach(IPS_GetConnectionList() as $connection) {
-        switch($connection['ConnectionType']) {
-            case "WebSocket":
+    foreach (IPS_GetConnectionList() as $connection) {
+        switch ($connection['ConnectionType']) {
+            case 'WebSocket':
                 $loggedWebSocket++;
                 break;
-            case "Proxy":
+            case 'Proxy':
                 $loggedProxy++;
                 break;
         }
@@ -83,15 +83,15 @@ if (function_exists('IPS_GetActiveConnections')) {
 //Detailed count of bytes per connection queue
 $queueBytesWebSocket = [];
 $queueBytesProxy = [];
-foreach(IPS_GetConnectionList() as $connection) {
-    switch($connection['ConnectionType']) {
-        case "WebSocket":
+foreach (IPS_GetConnectionList() as $connection) {
+    switch ($connection['ConnectionType']) {
+        case 'WebSocket':
             $queueBytesWebSocket[] = [
                 'remote' => $connection['Remote'],
                 'value'  => $connection['QueueBytes']
             ];
             break;
-        case "Proxy":
+        case 'Proxy':
             $queueBytesProxy[] = [
                 'remote' => $connection['Remote'],
                 'value'  => $connection['QueueBytes']
