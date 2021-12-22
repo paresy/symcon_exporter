@@ -62,8 +62,9 @@ if (function_exists('IPS_GetActiveConnections')) {
     addMetric('symcon_server_connections_active', 'Active WebSocket or RTSP connections', 'gauge', IPS_GetActiveConnections());
     addMetric('symcon_server_connections_logged', 'Logged connections', 'gauge', count(IPS_GetConnectionList()));
 } else {
-    addMetric('symcon_server_websocket_active', 'Active WebSocket or RTSP connections', 'gauge', IPS_GetActiveWebSocketConnections());
-    addMetric('symcon_server_proxy_active', 'Active WebSocket or RTSP connections', 'gauge', IPS_GetActiveProxyConnections());
+    addMetric('symcon_server_webserver_active', 'Active HTTP/MJPEG/RTSP connections', 'gauge', IPS_GetActiveWebServerConnections());
+    addMetric('symcon_server_websocket_active', 'Active WebSocket connections', 'gauge', IPS_GetActiveWebSocketConnections());
+    addMetric('symcon_server_proxy_active', 'Active MJPEG/RTSP connections', 'gauge', IPS_GetActiveProxyConnections());
     $loggedWebSocket = 0;
     $loggedProxy = 0;
     foreach (IPS_GetConnectionList() as $connection) {
