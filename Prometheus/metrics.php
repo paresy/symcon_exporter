@@ -2,6 +2,8 @@
 
 declare(strict_types=1);
 
+include 'types.php';
+
 //Configuration
 $export_cpu = false; //Enabling this will make this script run at least 1 second
 
@@ -55,6 +57,63 @@ if (function_exists('UC_GetEventStatistics')) {
     $eventStatistics = UC_GetEventStatistics($uc_id);
     addMetric('symcon_cyclicupdate_total', 'Total updates of cyclic events', 'counter', $eventStatistics['CyclicUpdateCount']);
     addMetric('symcon_triggerupdate_total', 'Total updates of trigger events', 'counter', $eventStatistics['TriggerUpdateCount']);
+}
+
+//Message SenderID metrics, IP-Symcon 6.1+
+if (function_exists('UC_GetMessageSenderIDList')) {
+    $lst = UC_GetMessageSenderIDList($uc_id);
+    usort($lst, function ($a, $b)
+    {
+        return $b['Count'] - $a['Count'];
+    });
+    $lst = array_slice($lst, 0, 10);
+    $result = [];
+    foreach ($lst as $item) {
+        $result[] = [
+            'id'     => $item['SenderID'],
+            'value'  => $item['Count'],
+            'name'   => IPS_GetName($item['SenderID']),
+        ];
+    }
+    addMetric('symcon_message_sender_id_total', 'Total messages by sender id (Top 10)', 'counter', $result);
+}
+
+//Message SenderID by size metrics, IP-Symcon 6.1+
+if (function_exists('UC_GetMessageSenderIDSizeList')) {
+    $lst = UC_GetMessageSenderIDSizeList($uc_id);
+    usort($lst, function ($a, $b)
+    {
+        return $b['Size'] - $a['Size'];
+    });
+    $lst = array_slice($lst, 0, 10);
+    $result = [];
+    foreach ($lst as $item) {
+        $result[] = [
+            'id'     => $item['SenderID'],
+            'value'  => $item['Size'],
+            'name'   => IPS_GetName($item['SenderID']),
+        ];
+    }
+    addMetric('symcon_message_sender_id_size', 'Total size of messages by sender id (Top 10)', 'counter', $result);
+}
+
+//Message Type metrics, IP-Symcon 6.1+
+if (function_exists('UC_GetMessageTypeList')) {
+    $lst = UC_GetMessageTypeList($uc_id);
+    usort($lst, function ($a, $b)
+    {
+        return $b['Count'] - $a['Count'];
+    });
+    $lst = array_slice($lst, 0, 10);
+    $result = [];
+    foreach ($lst as $item) {
+        $result[] = [
+            'type'   => $item['Message'],
+            'value'  => $item['Count'],
+            'name'   => messageToString($item['Message']),
+        ];
+    }
+    addMetric('symcon_message_type_total', 'Total messages grouped by type (Top 10)', 'counter', $result);
 }
 
 //WebServer Connections
