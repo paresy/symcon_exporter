@@ -52,6 +52,52 @@ if (function_exists('UC_GetKernelStatistics')) {
     addMetric('symcon_phpqueue_current_size', 'Count of PHP requests current queued', 'gauge', $kernelStatistics['RequestQueueSize']);
 }
 
+//Instance Message Queue metrics, IP-Symcon 6.1+
+// + MessageQueueWatch must be enabled for this function to return any results
+if (function_exists('IPS_GetInstanceMessageStatistics') && IPS_GetOption('MessageQueueWatch')) {
+    $lst = IPS_GetInstanceMessageStatistics();
+
+    usort($lst, function ($a, $b)
+    {
+        return $b['Duration'] - $a['Duration'];
+    });
+    $topDuration = array_slice($lst, 0, 10);
+    $result = [];
+    foreach ($topDuration as $item) {
+        // Instances without any processing time are of no value
+        if ($item['Duration'] == 0) {
+            continue;
+        }
+
+        $result[] = [
+            'id'     => $item['InstanceID'],
+            'value'  => $item['Duration'],
+            'name'   => IPS_GetName($item['InstanceID']),
+        ];
+    }
+    addMetric('symcon_messagequeue_instance_duration_total', 'Total duration spend in processing messages per instance (Top 10)', 'counter', $result);
+
+    usort($lst, function ($a, $b)
+    {
+        return $b['MaxDuration'] - $a['MaxDuration'];
+    });
+    $topMaxDuration = array_slice($lst, 0, 10);
+    $result = [];
+    foreach ($topMaxDuration as $item) {
+        // Instances without any processing time are of no value
+        if ($item['MaxDuration'] == 0) {
+            continue;
+        }
+
+        $result[] = [
+            'id'     => $item['InstanceID'],
+            'value'  => $item['MaxDuration'],
+            'name'   => IPS_GetName($item['InstanceID']),
+        ];
+    }
+    addMetric('symcon_messagequeue_instance_duration_max', 'Maximum duration spend in processing one message per instance (Top 10)', 'gauge', $result);
+}
+
 //Event metrics, IP-Symcon 5.4+
 if (function_exists('UC_GetEventStatistics')) {
     $eventStatistics = UC_GetEventStatistics($uc_id);
