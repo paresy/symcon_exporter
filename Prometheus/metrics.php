@@ -14,16 +14,30 @@ $uc_id = IPS_GetInstanceListByModuleID('{B69010EA-96D5-46DF-B885-24821B8C8DBD}')
 header('Content-Type: text/plain');
 
 //Version information
-addMetric('symcon_info', 'General version information', 'gauge', [
-    [
-        'platform' => IPS_GetKernelPlatform(),
-        'version'  => IPS_GetKernelVersion(),
-        'revision' => IPS_GetKernelRevision(),
-        'date'     => date('d.m.Y', IPS_GetKernelDate()),
-        'started'  => IPS_GetKernelStartTime(),
-        'value'    => 1
-    ]
-]);
+$info = [
+    'platform' => IPS_GetKernelPlatform(),
+    'version'  => IPS_GetKernelVersion(),
+    'revision' => IPS_GetKernelRevision(),
+    'date'     => date('d.m.Y', IPS_GetKernelDate()),
+    'started'  => IPS_GetKernelStartTime(),
+    'value'    => 1
+];
+if (function_exists('IPS_GetKernelArchitecture')) {
+    $info['architecture'] = IPS_GetKernelArchitecture();
+}
+if (function_exists('IPS_GetUpdateChannel')) {
+    $channel = @IPS_GetUpdateChannel();
+    // The function might fail and we do not want our metrics to fail in this situation
+    if ($channel) {
+        $info['channel'] = IPS_GetUpdateChannel();
+    } else {
+        $info['channel'] = 'Unknown';
+    }
+}
+if (function_exists('IPS_GetSystemLanguage')) {
+    $info['language'] = IPS_GetSystemLanguage();
+}
+addMetric('symcon_info', 'General version information', 'gauge', [$info]);
 
 //Simple metrics for objects
 addMetric('symcon_instances', 'Instance count', 'gauge', count(IPS_GetInstanceList()));
