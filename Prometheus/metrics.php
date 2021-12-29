@@ -249,21 +249,21 @@ foreach ($scriptThreadList as $scriptThread) {
         'id'    => $scriptThread['ThreadID'],
         'value' => $scriptThread['ExecuteCount']
     ];
-    //Avilable with IP-Symcon 5.4+
+    //Available with IP-Symcon 5.4+
     if (isset($scriptThread['ExecutionMin'])) {
         $scriptDurationMin[] = [
             'id'    => $scriptThread['ThreadID'],
             'value' => $scriptThread['ExecutionMin']
         ];
     }
-    //Avilable with IP-Symcon 5.4+
+    //Available with IP-Symcon 5.4+
     if (isset($scriptThread['ExecutionAvg'])) {
         $scriptDurationAvg[] = [
             'id'    => $scriptThread['ThreadID'],
             'value' => $scriptThread['ExecutionAvg']
         ];
     }
-    //Avilable with IP-Symcon 5.4+
+    //Available with IP-Symcon 5.4+
     if (isset($scriptThread['ExecutionMax'])) {
         $scriptDurationMax[] = [
             'id'    => $scriptThread['ThreadID'],
