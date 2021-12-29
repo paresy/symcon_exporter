@@ -127,19 +127,29 @@ if (function_exists('IPS_GetInstanceMessageStatistics') && IPS_GetOption('Messag
             }
         }
     }
-    arsort($parentLst);
-    $topParentDurationSum = array_slice($parentLst, 0, 10);
+    $lst = [];
+    foreach ($parentLst as $id => $duration) {
+        $lst[] = [
+            'InstanceID' => $id,
+            'Duration'   => $duration
+        ];
+    }
+    usort($lst, function ($a, $b)
+    {
+        return $b['Duration'] - $a['Duration'];
+    });
+    $topParentDurationSum = array_slice($lst, 0, 10);
     $result = [];
-    foreach ($topParentDurationSum as $id => $duration) {
+    foreach ($topParentDurationSum as $item) {
         // Instances without any processing time are of no value
-        if ($duration == 0) {
+        if ($item['Duration'] == 0) {
             continue;
         }
 
         $result[] = [
-            'id'     => $id,
-            'value'  => $duration,
-            'name'   => IPS_GetName($id),
+            'id'     => $item['InstanceID'],
+            'value'  => $item['Duration'],
+            'name'   => IPS_GetName($item['InstanceID']),
         ];
     }
     if (count($result) > 0) {
