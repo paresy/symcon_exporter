@@ -112,6 +112,11 @@ if (function_exists('IPS_GetInstanceMessageStatistics') && IPS_GetOption('Messag
     addMetric('symcon_messagequeue_instance_duration_max', 'Maximum duration spend in processing one message per instance (Top 10)', 'gauge', $result);
 }
 
+//Instance Message Queue size, IP-Symcon 6.1+ (special build only!)
+if (function_exists('IPS_GetInstanceMessageQueueSize')) {
+    addMetric('symcon_messagequeue_instance_current_size', 'Count of messages currently queued for instances', 'gauge', IPS_GetInstanceMessageQueueSize());
+}
+
 //Event metrics, IP-Symcon 5.4+
 if (function_exists('UC_GetEventStatistics')) {
     $eventStatistics = UC_GetEventStatistics($uc_id);
