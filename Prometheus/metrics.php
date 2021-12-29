@@ -89,7 +89,9 @@ if (function_exists('IPS_GetInstanceMessageStatistics') && IPS_GetOption('Messag
             'name'   => IPS_GetName($item['InstanceID']),
         ];
     }
-    addMetric('symcon_messagequeue_instance_duration_total', 'Total duration spend in processing messages per instance (Top 10)', 'counter', $result);
+    if (count($result) > 0) {
+        addMetric('symcon_messagequeue_instance_duration_total', 'Total duration spend in processing messages per instance (Top 10)', 'counter', $result);
+    }
 
     usort($lst, function ($a, $b)
     {
@@ -109,7 +111,40 @@ if (function_exists('IPS_GetInstanceMessageStatistics') && IPS_GetOption('Messag
             'name'   => IPS_GetName($item['InstanceID']),
         ];
     }
-    addMetric('symcon_messagequeue_instance_duration_max', 'Maximum duration spend in processing one message per instance (Top 10)', 'gauge', $result);
+    if (count($result) > 0) {
+        addMetric('symcon_messagequeue_instance_duration_max', 'Maximum duration spend in processing one message per instance (Top 10)', 'gauge', $result);
+    }
+
+    // Make a new metric that will sum up stats according to splitters
+    $parentLst = [];
+    foreach ($lst as $item) {
+        $connectionID = IPS_GetInstance($item['InstanceID'])['ConnectionID'];
+        if ($connectionID != 0) {
+            if (!isset($parentLst[$connectionID])) {
+                $parentLst[$connectionID] = $item['Duration'];
+            } else {
+                $parentLst[$connectionID] += $item['Duration'];
+            }
+        }
+    }
+    arsort($parentLst);
+    $topParentDurationSum = array_slice($parentLst, 0, 10);
+    $result = [];
+    foreach ($topParentDurationSum as $id => $duration) {
+        // Instances without any processing time are of no value
+        if ($duration == 0) {
+            continue;
+        }
+
+        $result[] = [
+            'id'     => $id,
+            'value'  => $duration,
+            'name'   => IPS_GetName($id),
+        ];
+    }
+    if (count($result) > 0) {
+        addMetric('symcon_messagequeue_parent_instance_duration_total', 'Total duration spend in processing sum if all messages per parent instance (Top 10)', 'counter', $result);
+    }
 }
 
 //Instance Message Queue size, IP-Symcon 6.1+ (special build only!)
