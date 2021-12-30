@@ -162,6 +162,72 @@ if (function_exists('IPS_GetInstanceMessageQueueSize')) {
     addMetric('symcon_messagequeue_instance_current_size', 'Count of messages currently queued for instances', 'gauge', IPS_GetInstanceMessageQueueSize());
 }
 
+//Instance Data Flow metrics, IP-Symcon 6.1+
+// + DataFlowWatch must be enabled for this function to return any results
+if (function_exists('IPS_GetInstanceDataFlowStatistics') && IPS_GetOption('DataFlowWatch')) {
+    $lst = IPS_GetInstanceDataFlowStatistics();
+
+    $analyzeFlow = function ($lst, $type, $ident, $direction)
+    {
+        $lst = array_filter($lst, function ($item) use ($type)
+        {
+            return IPS_GetInstance($item['InstanceID'])['ModuleInfo']['ModuleType'] == $type;
+        });
+
+        usort($lst, function ($a, $b) use ($direction)
+        {
+            return $b[$direction . 'Duration'] - $a[$direction . 'Duration'];
+        });
+        $topDuration = array_slice($lst, 0, 10);
+        $result = [];
+        foreach ($topDuration as $item) {
+            // Instances without any processing time are of no value
+            if ($item[$direction . 'Duration'] == 0) {
+                continue;
+            }
+
+            $result[] = [
+                'id'    => $item['InstanceID'],
+                'value' => $item[$direction . 'Duration'],
+                'name'  => IPS_GetName($item['InstanceID']),
+            ];
+        }
+        if (count($result) > 0) {
+            addMetric('symcon_dataflow_' . strtolower($direction) . '_instance_' . $ident . '_duration_total', 'Total duration spend in processing packets per ' . $ident . ' instance (Top 10)', 'counter', $result);
+        }
+
+        usort($lst, function ($a, $b) use ($direction)
+        {
+            return $b[$direction . 'MaxDuration'] - $a[$direction . 'MaxDuration'];
+        });
+        $topMaxDuration = array_slice($lst, 0, 10);
+        $result = [];
+        foreach ($topMaxDuration as $item) {
+            // Instances without any processing time are of no value
+            if ($item[$direction . 'MaxDuration'] == 0) {
+                continue;
+            }
+
+            $result[] = [
+                'id'    => $item['InstanceID'],
+                'value' => $item[$direction . 'MaxDuration'],
+                'name'  => IPS_GetName($item['InstanceID']),
+            ];
+        }
+        if (count($result) > 0) {
+            addMetric('symcon_dataflow_' . strtolower($direction) . '_instance_' . $ident . '_duration_max', 'Maximum duration spend in processing one packet per ' . $ident . ' instance (Top 10)', 'gauge', $result);
+        }
+    };
+
+    // We want to split instances into io/splitter/device
+    $analyzeFlow($lst, MODULETYPE_DEVICE, 'device', 'Tx');
+    $analyzeFlow($lst, MODULETYPE_DEVICE, 'device', 'Rx');
+    $analyzeFlow($lst, MODULETYPE_SPLITTER, 'splitter', 'Tx');
+    $analyzeFlow($lst, MODULETYPE_SPLITTER, 'splitter', 'Rx');
+    $analyzeFlow($lst, MODULETYPE_IO, 'io', 'Tx');
+    $analyzeFlow($lst, MODULETYPE_IO, 'io', 'Rx');
+}
+
 //Event metrics, IP-Symcon 5.4+
 if (function_exists('UC_GetEventStatistics')) {
     $eventStatistics = UC_GetEventStatistics($uc_id);
