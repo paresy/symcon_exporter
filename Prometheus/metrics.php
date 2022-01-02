@@ -71,6 +71,12 @@ if (function_exists('UC_GetKernelStatistics')) {
 if (function_exists('IPS_GetInstanceMessageStatistics') && IPS_GetOption('MessageQueueWatch')) {
     $lst = IPS_GetInstanceMessageStatistics();
 
+    // Remove any missing instances
+    $lst = array_filter($lst, function ($item)
+    {
+        return !IPS_InstanceExists($item['InstanceID']);
+    });
+
     usort($lst, function ($a, $b)
     {
         return $b['Duration'] - $a['Duration'];
@@ -166,6 +172,12 @@ if (function_exists('IPS_GetInstanceMessageQueueSize')) {
 // + DataFlowWatch must be enabled for this function to return any results
 if (function_exists('IPS_GetInstanceDataFlowStatistics') && IPS_GetOption('DataFlowWatch')) {
     $lst = IPS_GetInstanceDataFlowStatistics();
+
+    // Remove any missing instances
+    $lst = array_filter($lst, function ($item)
+    {
+        return !IPS_InstanceExists($item['InstanceID']);
+    });
 
     $analyzeFlow = function ($lst, $type, $ident, $direction)
     {
