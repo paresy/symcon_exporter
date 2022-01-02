@@ -157,7 +157,7 @@ if (function_exists('IPS_GetInstanceMessageStatistics') && IPS_GetOption('Messag
     }
 }
 
-//Instance Message Queue size, IP-Symcon 6.1+ (special build only!)
+//Instance Message Queue size, IP-Symcon 6.2+
 if (function_exists('IPS_GetInstanceMessageQueueSize')) {
     addMetric('symcon_messagequeue_instance_current_size', 'Count of messages currently queued for instances', 'gauge', IPS_GetInstanceMessageQueueSize());
 }
