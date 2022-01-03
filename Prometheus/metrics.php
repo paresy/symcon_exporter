@@ -515,6 +515,8 @@ function addMetric(string $name, string $help, string $type, $values)
                 $fields = [];
                 foreach ($value as $key => $val) {
                     if ($key != 'value') {
+                        $val = str_replace('\\', '\\\\', $val);
+                        $val = str_replace('"', '\\"', $val);
                         $fields[] = $key . '="' . $val . '"';
                     }
                 }
