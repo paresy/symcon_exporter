@@ -362,6 +362,8 @@ $scriptRequests = [];
 $scriptDurationMin = [];
 $scriptDurationAvg = [];
 $scriptDurationMax = [];
+$scriptPeakMemoryUsage = [];
+$scriptMemoryCleanups = [];
 foreach ($scriptThreadList as $scriptThread) {
     $scriptThread = IPS_GetScriptThread($scriptThread);
     $scriptThreads[] = $scriptThread;
@@ -393,6 +395,20 @@ foreach ($scriptThreadList as $scriptThread) {
             'value' => $scriptThread['ExecutionMax']
         ];
     }
+    //Available with IP-Symcon 6.3+
+    if (isset($scriptThread['PeakMemoryUsage'])) {
+        $scriptPeakMemoryUsage[] = [
+            'id'    => $scriptThread['ThreadID'],
+            'value' => $scriptThread['PeakMemoryUsage']
+        ];
+    }
+    //Available with IP-Symcon 6.3+
+    if (isset($scriptThread['MemoryCleanups'])) {
+        $scriptMemoryCleanups[] = [
+            'id'    => $scriptThread['ThreadID'],
+            'value' => $scriptThread['MemoryCleanups']
+        ];
+    }
 }
 addMetric('symcon_php_threads_maximum', 'Count of available PHP threads', 'gauge', count($scriptThreads));
 addMetric('symcon_php_threads_inuse', 'Count of PHP threads currently in use', 'gauge', $scriptThreadsInUse);
@@ -407,6 +423,12 @@ if (count($scriptDurationAvg) > 0) {
 }
 if (count($scriptDurationMax) > 0) {
     addMetric('symcon_php_duration_max', 'Request duration (max) per PHP thread', 'gauge', $scriptDurationMax);
+}
+if (count($scriptPeakMemoryUsage) > 0) {
+    addMetric('symcon_php_memory_usage_peak', 'Request peak memory usage per PHP thread', 'gauge', $scriptPeakMemoryUsage);
+}
+if (count($scriptMemoryCleanups) > 0) {
+    addMetric('symcon_php_memory_cleanups', 'Request memory cleanups per PHP thread', 'counter', $scriptMemoryCleanups);
 }
 
 //Script Sender metrics, IP-Symcon 5.4+
