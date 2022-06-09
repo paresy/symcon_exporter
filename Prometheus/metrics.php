@@ -9,6 +9,7 @@ $export_cpu = false; //Enabling this will make this script run at least 1 second
 
 //We reuse this information
 $uc_id = IPS_GetInstanceListByModuleID('{B69010EA-96D5-46DF-B885-24821B8C8DBD}')[0];
+$cc_id = IPS_GetInstanceListByModuleID('{9486D575-BE8C-4ED8-B5B5-20930E26DE6F}')[0];
 
 //This will give a nicer output in the browser
 header('Content-Type: text/plain');
@@ -352,6 +353,61 @@ if (count($queueBytesWebSocket) > 0) {
 }
 if (count($queueBytesProxy) > 0) {
     addMetric('symcon_server_proxy_queue_bytes', 'Bytes in Proxy connections queue', 'gauge', $queueBytesProxy);
+}
+
+//Connect Traffic usage, IP-Symcon 6.3+
+if (function_exists('CC_GetTrafficCounter')) {
+    $tc = CC_GetTrafficCounter($cc_id);
+    addMetric('symcon_connect_limit_bytes', 'Used Bytes for Connect Service (Limit)', 'gauge', $tc['LimitCounter']);
+    addMetric('symcon_connect_local_bytes', 'Used Bytes for Connect Service (Local)', 'gauge', $tc['LocalCounter']);
+    addMetric('symcon_connect_remote_bytes', 'Used Bytes for Connect Service (Remote)', 'gauge', $tc['RemoteCounter']);
+
+    $ts = CC_GetTrafficStatistics($cc_id);
+
+    $urlToArea = function ($url)
+    {
+        if (strstr($url, '/api/')) {
+            return 'JSON-RPC';
+        }
+        if (strstr($url, '/proxy/')) {
+            $id = intval(substr($url, strrpos($url, '/') + 1));
+            return 'Stream (' . IPS_GetName($id) . ')';
+        }
+        if (strstr($url, '/hook/')) {
+            $last = substr($url, strrpos($url, '/') + 1);
+            $id = intval($last);
+            if ($id > 10000) {
+                return 'Hook (' . IPS_GetName($id) . ')';
+            }
+            return 'Hook (' . $last . ')';
+        }
+        if (strstr($url, '/user/')) {
+            return 'User-Folder';
+        }
+        return 'Other';
+    };
+
+    // Map Traffic into Categories
+    $traffic = [];
+    foreach ($ts as $file) {
+        $area = $urlToArea($file['Url']);
+        if (isset($traffic[$area])) {
+            $traffic[$area] += $file['LimitCounter'];
+        } else {
+            $traffic[$area] = $file['LimitCounter'];
+        }
+    }
+
+    $result = [];
+    foreach ($traffic as $key => $value) {
+        $result[] = [
+            'area'   => $key,
+            'value'  => $value,
+        ];
+    }
+    if (count($result) > 0) {
+        addMetric('symcon_connect_usage_area_bytes', 'Used Bytes for Connect Service by area (Only Top contributors)', 'gauge', $result);
+    }
 }
 
 //Script Thread metrics
