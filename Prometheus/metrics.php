@@ -4,9 +4,6 @@ declare(strict_types=1);
 
 include 'types.php';
 
-//Configuration
-$export_cpu = false; //Enabling this will make this script run at least 1 second
-
 //We reuse this information
 $uc_id = IPS_GetInstanceListByModuleID('{B69010EA-96D5-46DF-B885-24821B8C8DBD}')[0];
 $cc_id = IPS_GetInstanceListByModuleID('{9486D575-BE8C-4ED8-B5B5-20930E26DE6F}')[0];
@@ -510,7 +507,10 @@ addMetric('symcon_process_memory_pagefile', 'Virtual size of symcon process', 'g
 addMetric('symcon_total_processes', 'Total count of processes on this system', 'gauge', $pi['PROCESSCOUNT']);
 
 //System usage metrics (we try to use similar names as the "prometheus node exporter")
-if ($export_cpu) {
+
+//Enabling this on non Window systems will make this script run at least 1 second
+//Therefore we just enable it on Windows and use the Load average indicator on the remaining platforms
+if (PHP_OS_FAMILY == 'Windows') {
     $ci = Sys_GetCPUInfo();
     $cpuUsage = [];
     for ($i = 0; $i < count($ci) - 1; $i++) {
@@ -522,7 +522,8 @@ if ($export_cpu) {
     addMetric('symcon_cpu_usage_total', 'CPU usage per core in percent', 'gauge', $cpuUsage);
 }
 
-if (PHP_OS == 'Linux') {
+//This is only available on non Windows systems
+if (PHP_OS_FAMILY != 'Windows') {
     $load = sys_getloadavg();
     addMetric('symcon_cpu_load1', 'CPU load avergage (1 minute)', 'gauge', $load[0]);
     addMetric('symcon_cpu_load5', 'CPU load avergage (5 minutes)', 'gauge', $load[1]);
