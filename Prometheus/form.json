@@ -1,7 +1,64 @@
 {
-	"elements":
-	[
-		{ "name": "Username", "type": "ValidationTextBox", "caption": "Username" },
-		{ "name": "Password", "type": "PasswordTextBox", "caption": "Password" }
-	]
+  "elements": [
+    {
+      "type": "ExpansionPanel",
+      "caption": "WebHook",
+      "expanded": true,
+      "items": [
+        {
+          "name": "HookEnabled",
+          "type": "CheckBox",
+          "caption": "Enabled"
+        },
+        {
+          "name": "Username",
+          "type": "ValidationTextBox",
+          "caption": "Username"
+        },
+        {
+          "name": "Password",
+          "type": "PasswordTextBox",
+          "caption": "Password"
+        }
+      ]
+    },
+    {
+      "type": "ExpansionPanel",
+      "caption": "Push",
+      "expanded": true,
+      "items": [
+        {
+          "name": "PushEnabled",
+          "type": "CheckBox",
+          "caption": "Enabled"
+        },
+        {
+          "name": "PushEndpointURL",
+          "type": "ValidationTextBox",
+          "caption": "Endpoint"
+        },
+        {
+          "name": "PushEndpointUsername",
+          "type": "ValidationTextBox",
+          "caption": "Username"
+        },
+        {
+          "name": "PushEndpointPassword",
+          "type": "PasswordTextBox",
+          "caption": "Password"
+        },
+        {
+          "name": "PushInterval",
+          "type": "NumberSpinner",
+          "caption": "Interval",
+          "suffix": "seconds"
+        },
+        {
+          "type": "Button",
+          "caption": "Push Metrics",
+          "onClick": "PMM_Push($id);"
+        }
+      ]
+    }
+  ]
 }
