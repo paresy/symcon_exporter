@@ -50,15 +50,15 @@ class Prometheus extends WebHookModule
         include __DIR__ . '/metrics.php';
         $data = ob_get_contents();
         ob_end_clean();
-        
+
         //Add gzip compression
         if (strstr($_SERVER['HTTP_ACCEPT_ENCODING'], 'gzip')) {
             $compressed = gzencode($data);
-            header("Content-Encoding: gzip");
-            header("Content-Length: " . strlen($compressed));
+            header('Content-Encoding: gzip');
+            header('Content-Length: ' . strlen($compressed));
             echo $compressed;
         } else {
-            header("Content-Length: " . strlen($data));
+            header('Content-Length: ' . strlen($data));
             echo $data;
         }
     }
