@@ -90,7 +90,7 @@ if (function_exists('IPS_GetInstanceMessageStatistics') && IPS_GetOption('Messag
         $result[] = [
             'id'     => $item['InstanceID'],
             'value'  => $item['Duration'],
-            'name'   => IPS_GetName($item['InstanceID']),
+            'name'   => IPS_InstanceExists($item['InstanceID']) ? IPS_GetName($item['InstanceID']) : '#' . $item['InstanceID'],
         ];
     }
     if (count($result) > 0) {
@@ -112,7 +112,7 @@ if (function_exists('IPS_GetInstanceMessageStatistics') && IPS_GetOption('Messag
         $result[] = [
             'id'     => $item['InstanceID'],
             'value'  => $item['MaxDuration'],
-            'name'   => IPS_GetName($item['InstanceID']),
+            'name'   => IPS_InstanceExists($item['InstanceID']) ? IPS_GetName($item['InstanceID']) : '#' . $item['InstanceID'],
         ];
     }
     if (count($result) > 0) {
@@ -122,7 +122,10 @@ if (function_exists('IPS_GetInstanceMessageStatistics') && IPS_GetOption('Messag
     // Make a new metric that will sum up stats according to splitters
     $parentLst = [];
     foreach ($lst as $item) {
-        $connectionID = IPS_GetInstance($item['InstanceID'])['ConnectionID'];
+        $connectionID = 0;
+        if (IPS_InstanceExists($item['InstanceID'])) {
+            IPS_GetInstance($item['InstanceID'])['ConnectionID'];
+        }
         if ($connectionID != 0) {
             if (!isset($parentLst[$connectionID])) {
                 $parentLst[$connectionID] = $item['Duration'];
@@ -153,7 +156,7 @@ if (function_exists('IPS_GetInstanceMessageStatistics') && IPS_GetOption('Messag
         $result[] = [
             'id'     => $item['InstanceID'],
             'value'  => $item['Duration'],
-            'name'   => IPS_GetName($item['InstanceID']),
+            'name'   => IPS_InstanceExists($item['InstanceID']) ? IPS_GetName($item['InstanceID']) : '#' . $item['InstanceID'],
         ];
     }
     if (count($result) > 0) {
@@ -197,9 +200,9 @@ if (function_exists('IPS_GetInstanceDataFlowStatistics') && IPS_GetOption('DataF
             }
 
             $result[] = [
-                'id'    => $item['InstanceID'],
-                'value' => $item[$direction . 'Duration'],
-                'name'  => IPS_GetName($item['InstanceID']),
+                'id'     => $item['InstanceID'],
+                'value'  => $item[$direction . 'Duration'],
+                'name'   => IPS_InstanceExists($item['InstanceID']) ? IPS_GetName($item['InstanceID']) : '#' . $item['InstanceID'],
             ];
         }
         if (count($result) > 0) {
@@ -219,9 +222,9 @@ if (function_exists('IPS_GetInstanceDataFlowStatistics') && IPS_GetOption('DataF
             }
 
             $result[] = [
-                'id'    => $item['InstanceID'],
-                'value' => $item[$direction . 'MaxDuration'],
-                'name'  => IPS_GetName($item['InstanceID']),
+                'id'     => $item['InstanceID'],
+                'value'  => $item[$direction . 'MaxDuration'],
+                'name'   => IPS_InstanceExists($item['InstanceID']) ? IPS_GetName($item['InstanceID']) : '#' . $item['InstanceID'],
             ];
         }
         if (count($result) > 0) {
@@ -258,7 +261,7 @@ if (function_exists('UC_GetMessageSenderIDList')) {
         $result[] = [
             'id'     => $item['SenderID'],
             'value'  => $item['Count'],
-            'name'   => IPS_GetName($item['SenderID']),
+            'name'   => IPS_ObjectExists($item['SenderID']) ? IPS_GetName($item['SenderID']) : '#' . $item['SenderID'],
         ];
     }
     addMetric('symcon_message_sender_id_total', 'Total messages by sender id (Top 10)', 'counter', $result);
@@ -277,7 +280,7 @@ if (function_exists('UC_GetMessageSenderIDSizeList')) {
         $result[] = [
             'id'     => $item['SenderID'],
             'value'  => $item['Size'],
-            'name'   => IPS_GetName($item['SenderID']),
+            'name'   => IPS_ObjectExists($item['SenderID']) ? IPS_GetName($item['SenderID']) : '#' . $item['SenderID'],
         ];
     }
     addMetric('symcon_message_sender_id_size', 'Total size of messages by sender id (Top 10)', 'counter', $result);
@@ -368,13 +371,21 @@ if (function_exists('CC_GetTrafficCounter')) {
         }
         if (strstr($url, '/proxy/')) {
             $id = intval(substr($url, strrpos($url, '/') + 1));
-            return 'Stream (' . IPS_GetName($id) . ')';
+            if (IPS_ObjectExists($id)) {
+                return 'Stream (' . IPS_GetName($id) . ')';
+            } else {
+                return 'Stream (#' . $id . ')';
+            }
         }
         if (strstr($url, '/hook/')) {
             $last = substr($url, strrpos($url, '/') + 1);
             $id = intval($last);
             if ($id > 10000) {
-                return 'Hook (' . IPS_GetName($id) . ')';
+                if (IPS_ObjectExists($id)) {
+                    return 'Hook (' . IPS_GetName($id) . ')';
+                } else {
+                    return 'Hook (#' . $id . ')';
+                }
             }
             return 'Hook (' . $last . ')';
         }
